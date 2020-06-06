@@ -1,0 +1,63 @@
+---
+title: "Optional Project"
+author: "J.E. Panzik"
+date: "6/2/2020"
+output: html_document
+---
+
+```{r loaddata}
+#install.packages("devtools")
+devtools::install_github("jhudsl/collegeIncome")
+library(collegeIncome)
+data(college)
+data <- college
+```
+
+```{r matahari}
+devtools::install_github("jhudsl/matahari")
+library(matahari)
+```
+
+```{r dancestart}
+dance_start(value = FALSE, contents = FALSE)
+```
+
+```{r data view}
+head(data,3)
+```
+
+Subset the data to look at the impacts of variables on the median, p25th, and p75th salaries.
+
+```{r subsets}
+data$major_category <- as.factor(data$major_category)
+dataMedian <- data[,c("major_category", "perc_women", "median", "perc_men", "perc_employed_fulltime_yearround")]
+data25 <- data[,c("major_category", "perc_women", "p25th", "perc_men", "perc_employed_fulltime_yearround")]
+data75 <- data[,c("major_category", "perc_women", "p75th", "perc_men", "perc_employed_fulltime_yearround")]
+```
+
+
+Fit median, p25th, and p75th salaries to all variables first, then use step to determine which variable(s) is/are the most significant.
+```{r fits}
+fitMedAll <- lm(median~., data=dataMedian)
+summary(fitMedAll)
+fitMedOpt <- step(fitMedAll, direction="both", trace=FALSE)
+summary(fitMedOpt)
+
+fit25All <- lm(p25th~., data=data25)
+summary(fit25All)
+fit25Opt <- step(fit25All, direction="both", trace=FALSE)
+summary(fit25Opt)
+
+fit75All <- lm(p75th~., data=data75)
+summary(fit75All)
+fit75Opt <- step(fit75All, direction="both", trace=FALSE)
+summary(fit75Opt)
+
+fitAllYear <- lm(perc_employed_fulltime_yearround~major_category, data=data25)
+summary(fitAllYear)
+```
+
+Analysis shows that major category holds litle influence on the median, p25th, and p75th salaries. Majors that are able to put more of their students in full-time, year-round employment have greater median, p25th, and p75th salaries.
+```{r dancesave}
+dance_save("college_major_analysis.rds")
+```
